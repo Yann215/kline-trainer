@@ -1,0 +1,8 @@
+services:
+  trainer:
+    build: .
+    ports: ["127.0.0.1:8765:8765"]
+    volumes: ["trainer-data:/data"]
+    restart: unless-stopped
+volumes:
+  trainer-data:

@@ -1,0 +1,13 @@
+.git
+**/node_modules
+**/.venv
+**/runtime
+**/dist
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+.env*
+local-artifacts
+**/*.sqlite*
+**/*.parquet
+**/*.log
