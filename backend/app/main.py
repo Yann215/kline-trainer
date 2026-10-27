@@ -3,8 +3,9 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
+from pydantic import BaseModel, Field
 
 from app.custom.training import router
 from app.dataset import LocalRepository, LocalStrategies, data_root, publish
@@ -12,6 +13,7 @@ from app.demo import demo_bars
 from app.services.training import TrainingMarket, TrainingService, TrainingStore
 from app.services.training_selection import catalog
 from app.services.ai_provider import ai_configured
+from app.services.data_sync import DataSync
 
 PROJECT = Path(__file__).resolve().parents[2]
 load_dotenv(PROJECT / ".env")
@@ -29,10 +31,30 @@ def create_app(root=None, *, seed_demo=True, frontend=None):
         repo = LocalRepository(root)
         engine = LocalStrategies(repo)
         app.state.training_service = TrainingService(TrainingStore(root), TrainingMarket(repo, engine))
+        app.state.data_sync = DataSync(root)
         yield
 
     app = FastAPI(title="Kline Trainer", version="0.1.0", lifespan=lifespan)
     app.include_router(router)
+
+    class SyncRequest(BaseModel):
+        source: str = Field(min_length=1, max_length=4096)
+
+    @app.get("/api/data-sync")
+    def sync_status(request: Request):
+        return request.app.state.data_sync.view()
+
+    @app.post("/api/data-sync")
+    def start_sync(payload: SyncRequest, request: Request):
+        origin = request.headers.get("origin")
+        if origin and origin.rstrip("/") != str(request.base_url).rstrip("/"):
+            raise HTTPException(403, "只允许本程序页面发起同步")
+        try:
+            return request.app.state.data_sync.start(payload.source)
+        except ValueError as exc:
+            raise HTTPException(400, str(exc)) from exc
+        except RuntimeError as exc:
+            raise HTTPException(409, str(exc)) from exc
 
     @app.get("/api/health")
     def health():
@@ -49,6 +71,13 @@ def create_app(root=None, *, seed_demo=True, frontend=None):
         return [row for row in catalog() if available or row["id"] not in limited]
 
     dist = Path(frontend) if frontend else Path(os.environ.get("TRAINER_WEB_DIR", PROJECT / "frontend" / "dist"))
+
+    @app.get("/favicon.ico", include_in_schema=False)
+    def favicon():
+        icon = PROJECT / "assets" / "kline-trainer.ico"
+        if not icon.is_file():
+            raise HTTPException(404, "图标不存在")
+        return FileResponse(icon, media_type="image/x-icon")
 
     @app.get("/{path:path}", include_in_schema=False)
     def spa(path: str):

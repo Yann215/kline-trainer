@@ -11,7 +11,7 @@ from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 ROOT = Path(__file__).resolve().parents[1]
 EXTRA = ("desktop_launcher.pyw", "windows-start.cmd", "scripts/windows-start.ps1",
-         "scripts/build_windows_bundle.py")
+         "scripts/build_windows_bundle.py", "assets/kline-trainer.ico", "assets/kline-trainer.png")
 
 
 def main() -> None:

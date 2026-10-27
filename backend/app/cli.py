@@ -11,6 +11,7 @@ import duckdb
 
 from app.dataset import data_root, publish, read_table
 from app.demo import demo_bars
+from app.market_import import import_tsp_market as import_tsp_market
 
 
 def import_tsp(source: Path, root: Path, strategy_ids: list[str], max_symbols: int):
