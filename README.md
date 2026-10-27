@@ -18,7 +18,13 @@
 
 ## 启动
 
-要求：Python **3.11+**，Node.js **20.19+ 或 22.12+**，npm。Windows 推荐 PowerShell。
+运行需要 Python **3.11+**。从源码构建前端还需要 Node.js **20.19+ 或 22.12+** 和 npm；下面的 Windows 资源包已构建前端，无需 Node.js。
+
+### Windows 资源包
+
+下载 [Windows 资源包](https://github.com/Yann215/kline-trainer/releases/latest/download/kline-trainer-windows.zip) 并完整解压到固定目录，双击其中的 `windows-start.cmd`。资源包已包含构建好的前端，运行时不需要 Node.js；首次启动需要已安装 Python 3.11+，并联网安装 Python 依赖，之后双击同一文件即可打开应用窗口。默认使用自动生成的合成演示行情。训练记录保存在解压目录的 `runtime/`，升级前请备份该目录；不要把 `.venv` 从一台电脑复制到另一台电脑。
+
+维护者可在构建前端后运行 `python scripts/build_windows_bundle.py` 生成资源包。包中不包含本地虚拟环境、行情、账户记录或密钥。
 
 ```powershell
 git clone https://github.com/Yann215/kline-trainer.git
